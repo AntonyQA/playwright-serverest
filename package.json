@@ -7,7 +7,15 @@
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "k6:smoke": "k6 run k6/run-all.js -e LOAD_PROFILE=smoke",
+    "k6:load": "k6 run k6/run-all.js -e LOAD_PROFILE=load",
+    "k6:stress": "k6 run k6/run-all.js -e LOAD_PROFILE=stress",
+    "k6:login": "k6 run k6/scenarios/login.js",
+    "k6:home": "k6 run k6/scenarios/home.js",
+    "k6:listar": "k6 run k6/scenarios/listar-produtos.js",
+    "k6:cadastrar": "k6 run k6/scenarios/cadastrar-produto.js",
+    "k6:excluir": "k6 run k6/scenarios/excluir-produto.js"
   },
   "keywords": [],
   "author": "",
