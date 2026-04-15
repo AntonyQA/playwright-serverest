@@ -21,16 +21,9 @@ pipeline {
 
     // ─── Opções gerais do pipeline ────────────────────────────────────────────
     options {
-        // Mantém os últimos 10 builds e seus artefatos
         buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
-
-        // Timeout global: se o pipeline demorar mais de 30 min, cancela
         timeout(time: 30, unit: 'MINUTES')
-
-        // Evita builds paralelos do mesmo branch
         disableConcurrentBuilds()
-
-        // Marca o timestamp em cada linha de log
         timestamps()
     }
 
@@ -40,7 +33,7 @@ pipeline {
         // 1. Checkout do código
         stage('Checkout') {
             steps {
-                echo '>>> Fazendo checkout do repositório...'
+                echo '>>> Fazendo checkout do repositorio...'
                 checkout scm
             }
         }
@@ -48,10 +41,10 @@ pipeline {
         // 2. Instala dependências Node
         stage('Install Dependencies') {
             steps {
-                echo '>>> Instalando dependências npm...'
-                sh 'node --version'
-                sh 'npm --version'
-                sh 'npm ci'
+                echo '>>> Instalando dependencias npm...'
+                bat 'node --version'
+                bat 'npm --version'
+                bat 'npm ci'
             }
         }
 
@@ -59,7 +52,7 @@ pipeline {
         stage('Install Playwright Browsers') {
             steps {
                 echo '>>> Instalando browsers do Playwright...'
-                sh 'npx playwright install --with-deps chromium'
+                bat 'npx playwright install chromium'
             }
         }
 
@@ -67,13 +60,13 @@ pipeline {
         stage('Playwright E2E Tests') {
             steps {
                 echo '>>> Executando testes E2E com Playwright...'
-                sh 'npm test'
+                bat 'npm test'
             }
             post {
                 always {
                     // Publica o relatório HTML do Playwright como artefato
                     publishHTML(target: [
-                        allowMissing         : false,
+                        allowMissing         : true,
                         alwaysLinkToLastBuild: true,
                         keepAll              : true,
                         reportDir            : "${PW_REPORT_DIR}",
@@ -84,25 +77,24 @@ pipeline {
 
                     // Arquiva screenshots e vídeos de falhas (se houver)
                     archiveArtifacts(
-                        artifacts          : 'test-results/**/*',
-                        allowEmptyArchive  : true
+                        artifacts         : 'test-results/**/*',
+                        allowEmptyArchive : true
                     )
                 }
             }
         }
 
         // 5. Testes de carga K6 (smoke — perfil leve, ideal para CI)
+        // Este stage só roda se o K6 estiver instalado no agente Windows.
         stage('K6 Smoke Tests') {
-            // Só roda se o K6 estiver instalado na máquina do agente.
-            // Remova o "when" abaixo se K6 sempre estiver disponível.
             when {
                 expression {
-                    sh(script: 'which k6 || command -v k6', returnStatus: true) == 0
+                    bat(script: 'where k6', returnStatus: true) == 0
                 }
             }
             steps {
                 echo '>>> Executando testes de smoke com K6...'
-                sh "npm run k6:smoke 2>&1 | tee ${K6_RESULT_FILE}"
+                bat "npm run k6:smoke > ${K6_RESULT_FILE} 2>&1"
             }
             post {
                 always {
@@ -118,17 +110,17 @@ pipeline {
     // ─── Notificações pós-pipeline ────────────────────────────────────────────
     post {
         success {
-            echo '✔ Pipeline concluído com sucesso!'
+            echo 'Pipeline concluido com sucesso!'
         }
         failure {
-            echo '✘ Pipeline falhou. Verifique os artefatos e logs acima.'
-            // Descomente o bloco abaixo para enviar e-mail em caso de falha:
+            echo 'Pipeline falhou. Verifique os artefatos e logs acima.'
+            // Descomente para enviar e-mail em caso de falha:
             // mail to: 'seu-time@example.com',
             //      subject: "[FALHA] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
             //      body: "Build URL: ${env.BUILD_URL}"
         }
         unstable {
-            echo '⚠ Pipeline instável (algum teste falhou mas o build continuou).'
+            echo 'Pipeline instavel (algum teste falhou mas o build continuou).'
         }
         always {
             echo '>>> Limpando workspace...'
