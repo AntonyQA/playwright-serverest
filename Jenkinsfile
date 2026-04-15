@@ -106,9 +106,7 @@ pipeline {
             }
             steps {
                 echo '>>> Executando testes de smoke com K6...'
-                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                    bat "npm run k6:smoke > ${K6_RESULT_FILE} 2>&1"
-                }
+                bat "k6 run k6/run-all.js -e LOAD_PROFILE=smoke -e BASE_URL=https://serverest.dev -e USER_EMAIL=%USER_EMAIL% -e USER_PASSWORD=%USER_PASSWORD% > ${K6_RESULT_FILE} 2>&1"
             }
             post {
                 always {
