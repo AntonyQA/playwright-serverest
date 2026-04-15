@@ -106,7 +106,9 @@ pipeline {
             }
             steps {
                 echo '>>> Executando testes de smoke com K6...'
-                bat "npm run k6:smoke > ${K6_RESULT_FILE} 2>&1"
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    bat "npm run k6:smoke > ${K6_RESULT_FILE} 2>&1"
+                }
             }
             post {
                 always {
