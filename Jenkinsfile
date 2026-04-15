@@ -38,7 +38,19 @@ pipeline {
             }
         }
 
-        // 2. Instala dependências Node
+        // 2. Cria o arquivo .env a partir das credenciais do Jenkins
+        stage('Setup Environment') {
+            steps {
+                echo '>>> Criando arquivo .env com as credenciais...'
+                bat """
+                    (echo BASE_URL=%BASE_URL%
+                    echo USER_EMAIL=%USER_EMAIL%
+                    echo USER_PASSWORD=%USER_PASSWORD%) > .env
+                """
+            }
+        }
+
+        // 3. Instala dependências Node
         stage('Install Dependencies') {
             steps {
                 echo '>>> Instalando dependencias npm...'
